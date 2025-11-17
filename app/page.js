@@ -226,10 +226,10 @@ export default function HomePage() {
           <section className="panel">
             <div className="current-title">About this app</div>
             <div className="current-sub" style={{ marginTop: 6 }}>
-              Weatherly · Live weather, forecast & charts
+              WeatherlyWeb · Live weather, forecast & charts
             </div>
             <p style={{ fontSize: 12, marginTop: 10, opacity: 0.85 }}>
-              Weatherly shows real-time weather using the OpenWeatherMap REST
+              WeatherlyWeb shows real-time weather using the OpenWeatherMap REST
               API. It includes current conditions, a 5-day forecast, a 24-hour
               temperature chart, and recent city history stored in the browser.
               Built with Next.js, React and Recharts.
