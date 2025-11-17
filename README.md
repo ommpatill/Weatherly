@@ -1,36 +1,121 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🌦️ Weatherly — Real-Time Weather Forecast Dashboard
 
-## Getting Started
+Weatherly is a fully responsive weather dashboard built using **Next.js (App Router)**, **React**, and the **OpenWeatherMap REST API**.
 
-First, run the development server:
+It provides:
+
+- 🟢 Live current weather conditions
+- 📅 5-day forecast
+- 🕒 24-hour temperature trend chart
+- 📍 GPS-based weather lookup
+- 🌡️ °C / °F temperature unit switching
+- 🧠 Recent city search history stored locally
+- ♿ Accessibility-friendly UI with live announcement regions
+
+This project was developed as part of **Unified Mentor’s Full Stack Web Development Internship (Hard Difficulty Project)**.
+
+---
+
+## 📌 Features
+
+### 🔍 Search
+- Search weather for any city worldwide
+- Clicking a recent city auto-loads its weather + updates search input
+
+### 🛰️ “Use my location”
+- Retrieves weather based on current device coordinates
+- Uses browser Geolocation API
+
+### 🌡️ Temperature Units
+- Switch between **Celsius (°C)** and **Fahrenheit (°F)**
+- Updates all displayed values and charts
+
+### 📊 Charts
+- 24-hour temperature curve using **Recharts**
+- Displays live temperature trend for the next day
+
+### 🗂️ Local History
+- Stores recent searches in `localStorage`
+- No backend database required
+
+### 💎 UI / UX
+- Clean modern dashboard layout
+- Fully responsive across desktop, tablet, and mobile
+- Keyboard accessible
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js (App Router) |
+| UI | React + CSS |
+| Charts | Recharts |
+| API Provider | OpenWeatherMap REST API |
+| Runtime | Node / Vercel Edge |
+| State | React Hooks + LocalStorage |
+
+---
+
+## 📂 Project Structure
+
+📦 weatherly
+┣ 📁 app
+┃ ┣ 📁 api/weather → Unified server route for weather requests
+┃ ┣ 📁 components → All UI elements and widget components
+┃ ┗ 📜 page.js → Main dashboard page
+┣ 📁 public → Icons and static assets
+┣ 📜 .env.local → API key (ignored by git)
+┣ 📜 package.json
+┗ 📜 README.md
+
+
+---
+
+## 🔑 Environment Variable
+
+Create a `.env.local` file in project root:
+
+OPENWEATHER_API_KEY=your_api_key_here
+
+
+⚠️ Do **NOT** commit this file.
+
+---
+
+## ▶️ Running the Project
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then visit:
+http://localhost:3000
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+✨ Screenshots
+Dashboard View	                                                   °F Mode
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+![alt text](image.png)                                   ![alt text](image-1.png)
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+👤 Author
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Om Patil
+Portfolio → https://ompatilportfolio.vercel.app
 
-## Deploy on Vercel
+GitHub → https://github.com/ommpatill
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+LinkedIn → https://linkedin.com/in/ompatill
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+📝 License
+
+This project is for education and portfolio use.
+You may fork, modify, and improve with attribution.
+
+
+⭐ Support
+
+If this project helped you, star the repository 🌟

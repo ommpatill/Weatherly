@@ -1,65 +1,242 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import SearchBar from "@/components/SearchBar";
+import CurrentWeather from "@/components/CurrentWeather";
+import ForecastGrid from "@/components/ForecastGrid";
+import WeatherChart from "@/components/WeatherChart";
+import RecentSearches from "@/components/RecentSearches";
+import Loader from "@/components/Loader";
+import WeatherUtilities from "@/components/WeatherUtilities";
+
+const STORAGE_KEY = "um-weather-recent-cities";
+
+export default function HomePage() {
+  const [current, setCurrent] = useState(null);
+  const [forecast, setForecast] = useState(null);
+  const [recent, setRecent] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [query, setQuery] = useState("");
+  const [unit, setUnit] = useState("metric"); // "metric" | "imperial"
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setRecent(parsed);
+      } catch {
+        // ignore malformed data
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(recent));
+  }, [recent]);
+
+  async function fetchWeatherByCity(city, unitOverride) {
+    const trimmed = city.trim();
+    if (!trimmed) return;
+
+    const u = unitOverride || unit;
+    setError("");
+    setLoading(true);
+    setCurrent(null);
+    setForecast(null);
+    setQuery(trimmed);
+
+    try {
+      const res = await fetch(
+        `/api/weather?city=${encodeURIComponent(trimmed)}&units=${u}`
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Failed to fetch weather.");
+      }
+
+      const json = await res.json();
+      setCurrent(json.current);
+      setForecast(json.forecast);
+      setLastUpdated(new Date());
+
+      setRecent((prev) => {
+        const list = [
+          trimmed,
+          ...prev.filter((c) => c.toLowerCase() !== trimmed.toLowerCase()),
+        ];
+        return list.slice(0, 6);
+      });
+    } catch (err) {
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchWeatherByCoords(lat, lon, unitOverride) {
+    const u = unitOverride || unit;
+    setError("");
+    setLoading(true);
+    setCurrent(null);
+    setForecast(null);
+
+    try {
+      const res = await fetch(
+        `/api/weather?lat=${lat}&lon=${lon}&units=${u}`
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.message || "Failed to fetch weather.");
+      }
+
+      const json = await res.json();
+      setCurrent(json.current);
+      setForecast(json.forecast);
+      setLastUpdated(new Date());
+
+      // show city name in search bar
+      if (json.current?.name) {
+        setQuery(json.current.name);
+        setRecent((prev) => {
+          const name = json.current.name;
+          const list = [
+            name,
+            ...prev.filter((c) => c.toLowerCase() !== name.toLowerCase()),
+          ];
+          return list.slice(0, 6);
+        });
+      }
+    } catch (err) {
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleSelectRecent(city) {
+    fetchWeatherByCity(city);
+  }
+
+  function handleUnitChange(nextUnit) {
+    if (nextUnit === unit) return;
+    setUnit(nextUnit);
+
+    // re-fetch current location in new unit
+    if (current?.coord) {
+      fetchWeatherByCoords(current.coord.lat, current.coord.lon, nextUnit);
+    } else if (query.trim()) {
+      fetchWeatherByCity(query, nextUnit);
+    }
+  }
+
+  function handleUseMyLocation() {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported in this browser.");
+      return;
+    }
+
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        fetchWeatherByCoords(latitude, longitude);
+      },
+      () => {
+        setError("Unable to access location. Please allow permission.");
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  const unitSymbol = unit === "imperial" ? "°F" : "°C";
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      <section className="panel" aria-labelledby="search-heading">
+        <h1
+          id="search-heading"
+          style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}
+        >
+          Search city weather
+        </h1>
+
+        <SearchBar
+          onSearch={fetchWeatherByCity}
+          value={query}
+          onChange={setQuery}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <p className="search-tagline">
+          Try cities like Pune, Mumbai, London, New York, Tokyo.
+        </p>
+
+        <div className="search-actions">
+          <button
+            type="button"
+            className="geo-btn"
+            onClick={handleUseMyLocation}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Use my location
+          </button>
+
+          <div className="unit-toggle" aria-label="Temperature units">
+            <span>Units:</span>
+            <div className="unit-pill">
+              <button
+                type="button"
+                className={unit === "metric" ? "active" : ""}
+                onClick={() => handleUnitChange("metric")}
+              >
+                °C
+              </button>
+              <button
+                type="button"
+                className={unit === "imperial" ? "active" : ""}
+                onClick={() => handleUnitChange("imperial")}
+              >
+                °F
+              </button>
+            </div>
+            <span className="unit-chip">{unitSymbol}</span>
+          </div>
         </div>
-      </main>
-    </div>
+
+        <div aria-live="polite" aria-atomic="true">
+          {loading && <Loader />}
+          {error && <div className="error-banner">{error}</div>}
+        </div>
+      </section>
+
+      <div className="dashboard-grid">
+        <div className="left-col">
+          <CurrentWeather data={current} unit={unit} />
+          <ForecastGrid forecast={forecast} unit={unit} />
+          <WeatherChart forecast={forecast} unit={unit} />
+        </div>
+
+        <div className="right-col">
+          <RecentSearches items={recent} onSelect={handleSelectRecent} />
+          <WeatherUtilities current={current} lastUpdated={lastUpdated} />
+
+          <section className="panel">
+            <div className="current-title">About this app</div>
+            <div className="current-sub" style={{ marginTop: 6 }}>
+              Weatherly · Live weather, forecast & charts
+            </div>
+            <p style={{ fontSize: 12, marginTop: 10, opacity: 0.85 }}>
+              Weatherly shows real-time weather using the OpenWeatherMap REST
+              API. It includes current conditions, a 5-day forecast, a 24-hour
+              temperature chart, and recent city history stored in the browser.
+              Built with Next.js, React and Recharts.
+            </p>
+          </section>
+        </div>
+      </div>
+    </>
   );
 }
