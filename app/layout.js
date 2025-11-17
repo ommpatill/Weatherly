@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
                   W
                 </div>
                 <div>
-                  <div className="app-brand-title">Weatherly</div>
+                  <div className="app-brand-title">WeatherlyWeb</div>
                   <div className="app-brand-sub">
                     Live weather & 5-day forecast dashboard
                   </div>
@@ -49,7 +49,7 @@ export default function RootLayout({ children }) {
 
           <footer className="dev-footer">
             <span className="dev-badge">
-              <span className="dot-logo">Weatherly.</span>
+              <span className="dot-logo">WeatherlyWeb.</span>
               <span>
                 Built by <strong>Om Patil</strong>
               </span>
